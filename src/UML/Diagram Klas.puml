@@ -1,0 +1,161 @@
+@startuml
+
+class Account {
+    -private Long id
+
+    -String login
+    -String password
+    -String email
+    -String firstName
+    -String lastName
+    -Address address
+
+    -List<Asset> assets;
+}
+class Address {
+    - Long id
+
+    - String street
+    - int houseNumber
+    - int buildingNumber
+    - String postCode
+    - String city
+    - String country
+}
+
+class Asset {
+    - Long id
+
+    - Long accountId
+    - String currencyName
+    - String currencyCode
+    - Double balance
+}
+
+class CurrencyPair {
+    - Long id
+
+    - String name
+    - String currency1
+    - String currency2
+
+    - Timestamp date
+
+    - double buyValue
+    - double sellValue
+}
+
+class TransactionHistory {
+    - Long id
+
+    - String assetName
+    - double volume
+    - double price
+    - double value
+    - double balance
+    - String action
+    - Timestamp date
+
+}
+
+class TransactionRequest {
+
+    - Long accountId
+    - String pairName
+    - double volume
+    - double bid
+    - double ask
+}
+
+interface AccountService {
+    + double changeAccountBalance()
+    + double getBalance()
+}
+class AccountServiceImpl {
+    - AccountRepository accountRepository
+
+    + double changeAccountBalance()
+    + double getBalance()
+}
+
+interface CanvasjsChartService {
+    + String getAssetRecords()
+    + String getNextAssetPoint()
+}
+class CanvasjsChartServiceImpl {
+    - AssetRepository assetRepository;
+    - StringBuilder assetBuilder;
+
+    + String getAssetRecords()
+    + String getNextAssetPoint()
+}
+
+interface TransactionService {
+    + TransactionHistory buyAsset()
+    + TransactionHistory sellAsset()
+}
+class TransactionServiceImpl {
+    - AccountService accountService
+    - TransactionHistoryRepository transactionHistoryRepository
+    - AssetRepository assetRepository
+
+    + TransactionHistory buyAsset()
+    + TransactionHistory sellAsset()
+    - TransactionHistory createTransactionHistoryRecord()
+    - double getBuyPrice()
+    - double getSellPrice()
+
+}
+interface AccountRepository
+interface TransactionHistoryRepository
+interface CurrencyPairRepository {
+    + List<CurrencyPair> findByName()
+    + Optional<CurrencyPair> findFirstByNameOrderByDateDesc()
+}
+interface AssetRepository
+
+class IndexController {
+    + String index()
+}
+class RestController {
+    - CanvasjsChartService canvasjsChartService
+    - TransactionService transactionService
+
+    + String getDataPoints()
+    + String getNextValue()
+    + TransactionHistory buyAssets()
+    + TransactionHistory sellAssets()
+}
+class AccountController {
+    - AccountService accountService
+
+    + String register()
+    + String login()
+    + String profilePage()
+}
+
+TransactionService <|-- TransactionServiceImpl
+AccountService <|-- AccountServiceImpl
+CanvasjsChartService <|-- CanvasjsChartServiceImpl
+
+AccountController *-- AccountService
+RestController *-- CanvasjsChartService
+RestController *-- TransactionService
+RestController - TransactionRequest
+
+TransactionServiceImpl *-- AccountService
+TransactionServiceImpl *-- TransactionHistoryRepository
+TransactionServiceImpl *-- AssetRepository
+TransactionServiceImpl *-- CurrencyPairRepository
+
+
+AccountServiceImpl *-- AccountRepository
+
+Account *-- Address
+Account *-- Asset
+
+TransactionHistoryRepository o-- TransactionHistory
+AssetRepository o-- Asset
+AccountRepository o-- Account
+CurrencyPairRepository o-- CurrencyPair
+@enduml

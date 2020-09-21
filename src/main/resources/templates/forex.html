@@ -1,0 +1,239 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <script type="text/javascript">
+        window.onload = function() {
+            var lastPoint = new Object();
+            var dataPoints = [];
+
+            var chart = new CanvasJS.Chart("chartContainer", {
+                animationEnabled: true,
+                zoomEnabled: true,
+                title: {
+                    text: "USD/PLN"
+                },
+                axisX: {
+                    crosshair: {
+                        enabled: true,
+                        snapToDataPoint: true,
+                        valueFormatString: "HH:mm:ss"
+                    }
+                },
+                axisY: {
+                    title: "Closing Price (in PLN)",
+                    includeZero: false,
+                    crosshair: {
+                        enabled: true,
+                        snapToDataPoint: true,
+                        valueFormatString: "$#,##0.00"
+                    }
+                },
+                data: [{
+                    type: "line",
+                    xValueFormatString: "HH:mm:ss",
+                    yValueFormatString: "$#,##0.00",
+                    xValueType: "dateTime",
+                    dataPoints: dataPoints
+                }]
+            });
+
+            function addData(data) {
+                for (var i = 0; i < data.length; i++) {
+                    dataPoints.push({
+                        x: new Date(data[i].x),
+                        y: data[i].sellPrice
+                    });
+                }
+                lastPoint.sellPrice = data[data.length - 1].sellPrice;
+                lastPoint.buyPrice = data[data.length -1 ].buyPrice;
+                chart.render();
+            }
+
+            $.getJSON("/restfull-service/currencyPair.json", addData);
+
+
+            var myvar = setInterval(myTimer, 10000);
+            function myTimer() {
+                $.getJSON("/restfull-service/next-value.json?pairname=USD/PLN", addPoint)
+            }
+
+            function addPoint(data) {
+                console.log(data);
+                sellValue.innerText = data.sellPrice.toFixed(6) + " PLN";
+                buyValue.innerText = data.buyPrice.toFixed(6) + " PLN";
+                lastPoint.sellPrice = data.sellPrice;
+                lastPoint.buyPrice = data.buyPrice;
+                volumeSellPrice.innerText = "Sell: " + (data.sellPrice * volume.value).toFixed(6);
+                volumeBuyPrice.innerText = "Buy: " + (data.buyPrice * volume.value).toFixed(6);
+                chart.options.data[0]
+                    .dataPoints.push( { x: data.x,
+                    y: data.sellPrice});
+                chart.options.data[0].dataPoints.shift();
+                chart.render();
+            }
+
+            function refreshValue () {
+                volumeSellPrice.innerText = "Sell: " + (lastPoint.sellPrice * volume.value).toFixed(6);
+                volumeBuyPrice.innerText = "Buy: " + (lastPoint.buyPrice * volume.value).toFixed(6);
+            }
+
+            volume.addEventListener('change', refreshValue);
+
+            buyButton.addEventListener('click', buyAssetFunction);
+            sellButton.addEventListener('click', sellAssetFunction);
+
+            function buyAssetFunction() {
+                console.log(volume.value)
+                $.ajax({
+                    type: "POST",
+                    url: "http://localhost:8080/buyAsset",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({"pairName":"USD/PLN","volume": volume.value}),
+
+                })
+                    .done(function (data) {
+                        balance.innerText = "Balance: " + data.balance.toFixed(2) + " PLN";
+                        $('#transactionsHistory tr:last').after('<tr><td scope="row">'+ data.id +'</td>\n' +
+                        '<td>' + data.pairName + '</td>\n' +
+                        '<td>' + data.volume + '</td>\n' +
+                        '<td>' + data.price.toFixed(6) + " PLN" +'</td>\n' +
+                        '<td>' + data.value.toFixed(2) + " PLN" +'</td>\n' +
+                        '<td>' + data.balance.toFixed(2)  + " PLN" + '</td>\n' +
+                        '<td class="text-center"><div class="btn btn-success disabled">' + data.action + '</div></td> </tr>')
+                });
+            }
+
+            function sellAssetFunction() {
+                console.log(volume.value)
+                $.ajax({
+                    type: "POST",
+                    url: "http://localhost:8080/sellAsset",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({"pairName":"USD/PLN","volume": volume.value}),
+
+                })
+                    .done(function (data) {
+                        $(".alert").alert('close');
+                        console.log(data)
+                        balance.innerText = "Balance: " + data.balance.toFixed(2) + " PLN";
+                        $('#transactionsHistory tr:last').after('<tr><td scope="row">'+ data.id +'</td>\n' +
+                            '<td>' + data.pairName + '</td>\n' +
+                            '<td>' + data.volume + '</td>\n' +
+                            '<td>' + data.price.toFixed(6) + " PLN" +'</td>\n' +
+                            '<td>' + data.value.toFixed(2) + " PLN" +'</td>\n' +
+                            '<td>' + data.balance.toFixed(2)  + " PLN" + '</td>\n' +
+                            '<td class="text-center"><div class="btn btn-danger disabled">' + data.action + '</div></td> </tr>')
+                    });
+            }
+
+            $(".alert").alert('close');
+        }
+
+        $(".alert").alert('close');
+    </script>
+
+    <link href="webjars/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="/index">Forex Trading</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarText">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/index">Home</a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="/trade">Trade</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/profile">Profile</a>
+            </li>
+        </ul>
+        <span class="navbar-text" id="balance" th:text="'Balance: '+ ${#numbers.formatDecimal(balance, 0, 'COMMA', 2, 'POINT')} +' PLN'">
+      Balance:
+    </span>
+    </div>
+</nav>
+
+<div class="row justify-content-md-center">
+<div class="col-sm-11" id="chartContainer" style="height: 370px; width: 100%;"></div>
+</div>
+<div class="row justify-content-md-center">
+
+    <div class="col-sm-3">
+        <div class="card text-center">
+            <div class="card-header">
+                Buy for price:
+            </div>
+            <div class="card-body">
+                <h5 id="buyValue" class="card-title">4.35</h5>
+                <button type="button" id="buyButton" class="btn btn-success btn-lg">BUY</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-2">
+        <div class="card text-center">
+            <div class="card-header">
+                Volume:
+            </div>
+            <div class="card-body">
+                <input type="number" class="form-control" id="volume">
+                <h6 id="volumeSellPrice" class="card-title"></h6>
+                <h6 id="volumeBuyPrice" class="card-title"></h6>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-3">
+        <div class="card text-center">
+            <div class="card-header">
+                Sell for price:
+            </div>
+            <div class="card-body">
+                <h5 id="sellValue" class="card-title">4.35</h5>
+                <button type="button" id="sellButton" class="btn btn-danger btn-lg">SELL</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row justify-content-md-center mt-3">
+    <div class="col-sm-8">
+<table class="table table-bordered table-hover table-sm" id="transactionsHistory">
+    <h3>Transactions History</h3>
+    <thead class="thead-dark">
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">Pair Name</th>
+        <th scope="col">Amount</th>
+        <th scope="col">Price</th>
+        <th scope="col">Value</th>
+        <th scope="col">Balance</th>
+        <th scope="col">Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="hisRecord : ${history}">
+        <td th:text="${hisRecord.id}"></td>
+        <td th:text="${hisRecord.pairName}"></td>
+        <td th:text="${hisRecord.volume}"></td>
+        <td th:text="${hisRecord.price}"></td>
+        <td th:text="${hisRecord.value}"></td>
+        <td th:text="${hisRecord.balance}"></td>
+        <td class="text-center" th:if="${hisRecord.action == 'SELL'}"><div th:text="${hisRecord.action}" class="btn btn-danger disabled"></div></td>
+        <td class="text-center" th:if="${hisRecord.action == 'BUY'}"><div th:text="${hisRecord.action}"  class="btn btn-success disabled">' + data.action + '</div></td>
+    </tr>
+    </tbody>
+</table>
+    </div>
+</div>
+
+<script src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<script src="webjars/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+<script src="webjars/jquery/3.4.1/jquery.min.js"></script>
+</body>
+</html>

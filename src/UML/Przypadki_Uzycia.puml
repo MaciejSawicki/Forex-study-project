@@ -1,0 +1,15 @@
+@startuml
+
+User --> (Create account)
+User --> (Modify account)
+User --> (Delete account)
+User --> (Charge account)
+User --> (Withdraw money)
+User --> (Login)
+User --> (Buy asset)
+User --> (Sell asset)
+User --> (Specify amount of buying/selling asset)
+
+User --> (Get transactions history)
+
+@enduml

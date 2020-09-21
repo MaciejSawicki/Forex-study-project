@@ -1,0 +1,25 @@
+@startuml
+(*)  -->  If "User have account" then
+--> [Yes] "Sign in" as sign_in
+else
+--> [No] "Sign up"
+Endif
+--> sign_in
+sign_in --> ===B1===
+--> "Show Transactions History"
+===B1===--> "Show User Profile"
+--> ===B2===
+--> "Charge account"
+===B2=== --> "Modify Account"
+===B2=== --> "Delete account"
+===B1===--> "Choose currency pair" as choose
+--> "Buy/Sell currency Pair"
+If "Is transaction possible" then
+--> [Yes] "Create Transaction History Record"
+--> "Change User Account Balance"
+--> (*)
+else
+--> [No] "Show error Message"
+--> choose
+Endif
+@enduml

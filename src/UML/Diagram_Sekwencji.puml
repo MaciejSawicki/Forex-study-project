@@ -1,0 +1,68 @@
+@startuml
+participant User
+
+== Registration ==
+User -> A: Register
+activate A
+
+A -> B: << createRequest >>
+activate B
+
+B -> Server:  << verifyRequest >>
+activate Server
+Server -> Server: Save User
+Server --> B: User Created
+deactivate Server
+
+B --> A: Request Created
+deactivate B
+
+A --> User: Registration finished
+deactivate A
+== Sign In ==
+User -> Server: Authentication Request
+Server --> User: Authentication Response
+
+== Charging account ==
+participant "Payment Supplier" as Payment
+
+User -> A: Charge account request
+activate A
+
+
+A ->  Payment : Redirect to supplier page
+activate Payment
+Payment -> Payment : Add assets
+Payment -> Server : User charged account
+deactivate Payment
+
+activate Server
+Server -> Server : Change User balance
+Server -> A : << Create Response >>
+deactivate Server
+
+A -> User : Recharged Account Response
+deactivate A
+
+== Buying/Selling Asset ==
+User -> A: Choose pair
+activate A
+A -> B: Specify volume to BUY/Sell
+deactivate A
+activate B
+B -> Server: << Create Request >>
+deactivate B
+activate Server
+Server -> Server: Check User Balance
+Server -> Server: Make Transaction History Record
+Server -> Server: Change User Balance
+Server -> User: << Create Response >>
+deactivate Server
+
+
+
+
+
+
+
+@enduml

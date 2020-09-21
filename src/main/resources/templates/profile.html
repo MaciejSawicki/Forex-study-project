@@ -1,0 +1,85 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+    <link href="webjars/bootstrap/4.4.1/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <a class="navbar-brand" href="/index">Forex Trading</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarText">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="/index">Home<span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/trade">Trade</a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="/profile">Profile</a>
+            </li>
+        </ul>
+        <span class="navbar-text" id="balance" th:text="'Balance: '+ ${#numbers.formatDecimal(balance, 0, 'COMMA', 2, 'POINT')} +' PLN'">
+      Balance:
+    </span>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="row">
+        <div class="col-3">
+            <img th:src="@{/img/profile.png}" alt="profile photo" class="rounded">
+        </div>
+        <div class="col-9">
+            <div class="card">
+                <h5 class="card-header">User</h5>
+                <div class="card-body">
+                    <h5 class="card-title" th:text="'Name: ' + ${account.firstName} + ' ' + ${account.lastName}">.</h5>
+                    <p class="card-text" th:text="'Address: ' + ${account.address}"></p>
+                    <a href="#" class="btn btn-primary">Recharge My Account</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row justify-content-md-center mt-3">
+    <div class="col-sm-8">
+        <table class="table table-bordered table-hover table-sm" id="transactionsHistory">
+            <h3>Transactions History</h3>
+            <thead class="thead-dark">
+            <tr>
+                <th scope="col">Pair Name</th>
+                <th scope="col">Amount</th>
+                <th scope="col">Price</th>
+                <th scope="col">Value</th>
+                <th scope="col">Balance</th>
+                <th scope="col">Action</th>
+            </tr>
+            </thead>
+            <tbody>
+                <tr th:each="hisRecord : ${history}">
+                    <td th:text="${hisRecord.pairName}"></td>
+                    <td th:text="${hisRecord.volume}"></td>
+                    <td th:text="${hisRecord.price}"></td>
+                    <td th:text="${hisRecord.value}"></td>
+                    <td th:text="${hisRecord.balance}"></td>
+                    <td class="text-center" th:if="${hisRecord.action == 'SELL'}"><div th:text="${hisRecord.action}" class="btn btn-danger disabled"></div></td>
+                    <td class="text-center" th:if="${hisRecord.action == 'BUY'}"><div th:text="${hisRecord.action}"  class="btn btn-success disabled">' + data.action + '</div></td>
+
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<script src="webjars/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+<script src="webjars/jquery/3.4.1/jquery.min.js"></script>
+</body>
+</html>
