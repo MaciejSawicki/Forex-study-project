@@ -27,6 +27,10 @@
         <span class="navbar-text" id="balance" th:text="'Balance: '+ ${#numbers.formatDecimal(balance, 0, 'COMMA', 2, 'POINT')} +' PLN'">
       Balance:
     </span>
+        </span>
+        <form th:action="@{/logout}" method="post" style="margin-left: 5px">
+            <input type="submit" value="Sign Out"/>
+        </form>
     </div>
 </nav>
 
@@ -45,6 +49,27 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+<div class="row justify-content-md-center mt-3">
+    <div class="col-sm-8">
+        <table class="table table-bordered table-hover table-sm" id="Assets">
+            <h3>User Assets</h3>
+            <thead class="thead-dark">
+            <tr>
+                <th scope="col">Currency</th>
+                <th scope="col">Currency Code</th>
+                <th scope="col">Amount</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="asset : ${account.assets}">
+                <td th:text="${asset.currencyName}"></td>
+                <td th:text="${asset.currencyCode}"></td>
+                <td th:text="${asset.balance}"></td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 <div class="row justify-content-md-center mt-3">
